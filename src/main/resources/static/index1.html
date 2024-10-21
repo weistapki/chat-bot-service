@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .chat-box {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .chat-log {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .chat-log li {
+            margin-bottom: 10px;
+        }
+
+        .chat-log .bot-message {
+            color: blue;
+        }
+
+        .chat-log .user-message {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+
+<h1>WebSocket Chat</h1>
+
+<div class="chat-box">
+    <ul id="chat-log" class="chat-log"></ul>
+</div>
+
+<input type="text" id="messageInput" class="message-input" placeholder="Type your message here..." />
+<button id="sendBtn">Send</button>
+
+<script>
+    const socketUrl = 'ws://localhost:8081/chat?token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImlhdCI6MTcyOTUyMzQzOSwiZXhwIjoxNzI5NTI3MDM5fQ.Nzw0Cx3jEgLIvP67mBySjj_qoH1kz1Esn9u3a0RT8ag';
+
+
+    const socket = new WebSocket(socketUrl);
+
+    const chatLog = document.getElementById('chat-log');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    socket.onopen = function(event) {
+        appendMessage('Connected to WebSocket server');
+    };
+
+    socket.onmessage = function(event) {
+        appendMessage(event.data);
+    };
+
+    socket.onclose = function(event) {
+        appendMessage('Disconnected from WebSocket server');
+    };
+
+    sendBtn.onclick = function() {
+        const message = messageInput.value;
+        if (message.trim() !== '') {
+            socket.send(message);
+            appendMessage(`You: ${message}`, 'user-message');
+            messageInput.value = '';
+        }
+    };
+
+    function appendMessage(message, type = 'bot-message') {
+        const li = document.createElement('li');
+        li.textContent = message;
+        li.classList.add(type);
+        chatLog.appendChild(li);
+        chatLog.scrollTop = chatLog.scrollHeight; // Скролл вниз
+    }
+</script>
+
+</body>
+</html>
